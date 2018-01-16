@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - svg loader</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+		body {
+			color: #ffffff;
+			font-family: Monospace;
+			font-size: 13px;
+			text-align: center;
+			font-weight: bold;
+			background-color: #000000;
+			margin: 0px;
+			overflow: hidden;
+		}
+		#info {
+			position: absolute;
+			top: 0px;
+			width: 100%;
+			padding: 5px;
+		}
+		a {
+			color: #ffffff;
+		}
+		img {
+			width: 100%;
+			height: auto;
+		}
+		</style>
+	</head>
+
+	<body>
+
+		<div id="container"></div>
+
+		<script src="three.min.js"></script>
+		<script src="OrbitControls.js"></script>
+		<script src="SVGLoader.js"></script>
+		<script src="SVGRenderer.js"></script>
+		<script>
+			var renderer, scene, camera, board_group;
+			//
+			//img.src = "textures/tiger.svg";
+			//img.src = "textures/badge2018-brd.svg";
+			layers = [
+				"textures/badge2018-B.SilkS.svg",
+				"textures/badge2018-B.Cu.svg",
+				"textures/badge2018-In2.Cu.svg",
+				"textures/badge2018-Edge.Cuts.svg",
+				"textures/badge2018-In1.Cu.svg",
+				//"textures/badge2018-F.Mask.svg",
+				"textures/badge2018-F.Cu.svg"
+
+			];
+
+			function set_color(canv, color){
+				var ctx = canv.getContext('2d');
+				var imageData = ctx.getImageData(0,0,canv.width, canv.height);
+				var data = imageData.data;
+				var rr = (color & 0xff0000) >> 16;
+				var gg = (color & 0x00ff00) >> 8;
+				var bb = (color & 0x0000ff);
+				for(var i = 0; i < data.length; i+= 4){
+					r = data[i];
+					g = data[i+1];
+					b = data[i+2];
+					if (r == 0 && g == 0 & b == 0){
+						data[i] = rr;
+						data[i+1] = gg;
+						data[i+2] = bb;
+					}
+				}
+				ctx.putImageData(imageData,0,0);
+			}
+
+			var textures = [null, null, null, null, null,null];
+			var meshes = [null,null,null,null,null,null];
+			var purple = 0x880088;
+			var pink = 0xff22ff;
+			var gold = 0xb38f00;
+			var yellow = 0xffff00;
+			var green = 0x00ff00;
+			var red = 0xff0000;
+			var blue = 0x0000ff;
+			var colors = [blue,red,green,gold,pink,yellow];
+			var cnt = layers.length	
+			function load_layer(s,i){
+				var texture;
+				var img = document.createElement("img");
+				//img.height = 400;
+				//img.width = 400;
+				img.onload = function(e){
+					//this.height = 1000;
+					//this.width = 1000;
+					var canvas = document.createElement("canvas");
+					canvas.height = img.height;
+					canvas.width = img.width;
+					ctx = canvas.getContext('2d');
+					ctx.drawImage(this,0,0);
+					set_color(canvas,colors[i]);
+					texture = new THREE.Texture(canvas);
+					texture.needsUpdate = true;
+					cnt--;
+					textures[i] = texture;
+					console.log("Loaded " + cnt);
+					if (cnt == 0){
+						init();
+						animate();
+
+					}
+				}
+				img.src = s;
+			}
+
+			for(var i = 0; i < layers.length; i++){
+				load_layer(layers[i],i);
+			}
+			function init() {
+				var container = document.getElementById( 'container' );
+				//
+				renderer = new THREE.WebGLRenderer(  );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000 );
+				camera.position.set( 0, 0, 150 );
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x000000 );
+				//
+				//
+				//var helper = new THREE.GridHelper( 160, 10 );
+				//helper.rotation.x = Math.PI / 2;
+				//scene.add( helper );
+				//
+		
+				//texture.offset.set(0.5,0);
+
+				var geom = new THREE.PlaneGeometry(128,128,64);
+				
+				board_group = new THREE.Group();
+				for (var i = 0; i < textures.length; i++){
+				//var geom = new THREE.BoxGeometry(100,100,100);
+
+					var mat = new THREE.MeshPhysicalMaterial(
+						{map:textures[i], 
+						side:THREE.DoubleSide,
+						transparent:true,
+						reflectivity:0.5,
+						metalness:0,
+						clearCoat:0.5,
+						clearCoatRoughness:0.5,
+						});
+					mat.map.minFilter = THREE.LinearFilter;
+					mesh = new THREE.Mesh(geom,mat);
+					mesh.position.set(0,0,-20 + 10 * i);
+					mesh.castShadow=true;
+					meshes[i] = mesh;
+					board_group.add(mesh)
+				}
+				scene.add(board_group);	
+
+
+				var light = new THREE.PointLight(0xffffff,1,200);
+				light.position.set(30,0,100);
+				scene.add(light);
+
+				light = new THREE.PointLight(0xffffff,1,200);
+				light.position.set(-30,0,100);
+				scene.add(light);
+
+				light = new THREE.PointLight(0xffffff,1,200);
+				light.position.set(0,0,-100);
+				scene.add(light);
+				//
+				//
+				var controls = new THREE.OrbitControls( camera, renderer.domElement );
+				controls.screenSpacePanning = true;
+				//
+				window.addEventListener( 'resize', onWindowResize, false );
+				scene.add(new THREE.AmbientLight(0x555555));
+			}
+			function set_spacing(n){
+				offset = - meshes.length/2 * n;
+				for(var i = 0; i < meshes.length; i++){
+					meshes[i].position.set(0,0,2+offset + n * i);
+				}
+
+
+			}
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+			frame_n = 0;
+			function animate() {
+				requestAnimationFrame( animate );
+				board_group.rotation.y += 0.003;
+				frame_n += 1;
+				set_spacing(Math.abs(Math.sin(frame_n/180))*20);
+				render();
+			}
+			function render() {
+				renderer.render( scene, camera );
+			}
+		</script>
+
+	</body>
+</html>

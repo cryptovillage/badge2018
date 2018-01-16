@@ -1,0 +1,6 @@
+* text=auto
+*.c text
+*.h text
+*.sch text
+*.kicad_pcb text
+*.kicad_mod text

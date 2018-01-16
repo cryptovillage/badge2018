@@ -1,0 +1,12 @@
+#!/bin/sh
+
+EXPECTED_ARGS=1
+E_BADARGS=65
+
+if [ $# -ne $EXPECTED_ARGS ]
+then
+  echo "Usage: `basename $0` gifinputfile rawoutputfile"
+  exit $E_BADARGS
+fi
+ffplay -f rawvideo -pixel_format rgb565be -video_size 520x565 -framerate 22 $1
+

@@ -1,0 +1,327 @@
+<!-- Learn about this code on MDN: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes -->
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+	<meta charset="utf-8"/>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+ </head>
+ <body>
+		<div style="width: 300px; position: fixed; left: 5px; z-index: 100; background-color: white;">
+			<div style="height: 460px; border: 1px solid black; padding: 5px;">
+				Top:
+				<select id="top-hallway" onchange="setTileOptions();">
+					<option value="0">Open Passage</option>
+					<option value="1">Brick Wall</option>
+					<option value="2">Colored Key</option>
+					<option value="3">Locked Door</option>
+					<option value="4">Portal</option>
+				</select>
+				<input id="top-hallway-options" onchange="setTileOptions();"></input>
+				<br/><br/>
+				Left:
+				<select id="left-hallway" onchange="setTileOptions();">
+					<option value="0">Open Passage</option>
+					<option value="1">Brick Wall</option>
+					<option value="2">Colored Key</option>
+					<option value="3">Locked Door</option>
+					<option value="4">Portal</option>
+				</select>
+				<input id="left-hallway-options" onchange="setTileOptions();"></input>
+				<br/><br/>
+				Right:
+				<select id="right-hallway" onchange="setTileOptions();">
+					<option value="0">Open Passage</option>
+					<option value="1">Brick Wall</option>
+					<option value="2">Colored Key</option>
+					<option value="3">Locked Door</option>
+					<option value="4">Portal</option>
+				</select>
+				<input id="right-hallway-options" onchange="setTileOptions();"></input>
+				<br/><br/>
+				<br/><br/>
+        <button onclick="moveHome();">Home</button>
+        <button onclick="moveLeft();">Left</button>
+        <button onclick="moveUp();">Up</button>
+        <button onclick="moveRight();">Right</button>
+				<br/><br/>
+				<br/><br/>
+				Open File:<br/>
+        <input type='file' onchange='onChooseFile(event, onFileLoad.bind(this))' />
+				<br/><br/>
+        <button onclick="saveFile();">Save Changes</button>
+			</div>
+			<div>
+			</div>
+		</div>
+		<div style="position: absolute; left: 300px;">
+			<canvas id="canvas" width="3000" height="3000"></canvas>
+		</div>
+	<script>
+    var selected_x = 5;
+    var selected_y = 5;
+    var tiles = {};
+
+		function draw(x_coord, y_coord) {
+			var canvas = document.getElementById('canvas');
+			if (canvas.getContext) {
+				var ctx = canvas.getContext('2d');
+				var y_center = (y_coord * 90) - (x_coord * 45);
+				var x_center = (x_coord * 78);
+        var tile = tiles[[x_coord, y_coord].toString()] || {};
+				
+				// Stroked triangle
+				ctx.beginPath();
+				ctx.moveTo(x_center + 124, y_center + 65);
+				ctx.lineTo(x_center + 124, y_center + 53);
+				ctx.lineTo(x_center + 134, y_center + 47);
+				ctx.lineTo(x_center + 150, y_center + 56);
+				ctx.lineTo(x_center + 165, y_center + 47);
+				ctx.lineTo(x_center + 176, y_center + 53);
+				ctx.lineTo(x_center + 176, y_center + 65);
+				ctx.lineTo(x_center + 165, y_center + 71);
+				ctx.lineTo(x_center + 165, y_center + 83);
+				ctx.lineTo(x_center + 181, y_center + 92);
+				ctx.lineTo(x_center + 181, y_center + 110);
+				ctx.lineTo(x_center + 191, y_center + 116);
+				ctx.lineTo(x_center + 202, y_center + 110);
+				ctx.lineTo(x_center + 212, y_center + 116);
+				ctx.lineTo(x_center + 212, y_center + 128);
+				ctx.lineTo(x_center + 197, y_center + 137);
+				ctx.lineTo(x_center + 197, y_center + 155);
+				ctx.lineTo(x_center + 186, y_center + 161);
+				ctx.lineTo(x_center + 176, y_center + 155);
+				ctx.lineTo(x_center + 176, y_center + 143);
+				ctx.lineTo(x_center + 165, y_center + 137);
+				ctx.lineTo(x_center + 150, y_center + 146);
+				ctx.lineTo(x_center + 134, y_center + 137);
+				ctx.lineTo(x_center + 124, y_center + 143);
+				ctx.lineTo(x_center + 124, y_center + 155);
+				ctx.lineTo(x_center + 114, y_center + 161);
+				ctx.lineTo(x_center + 103, y_center + 155);
+				ctx.lineTo(x_center + 103, y_center + 137);
+				ctx.lineTo(x_center + 88, y_center + 128);
+				ctx.lineTo(x_center + 88, y_center + 116);
+				ctx.lineTo(x_center + 98, y_center + 110);
+				ctx.lineTo(x_center + 108, y_center + 116);
+				ctx.lineTo(x_center + 119, y_center + 110);
+				ctx.lineTo(x_center + 119, y_center + 92);
+				ctx.lineTo(x_center + 134, y_center + 83);
+				ctx.lineTo(x_center + 134, y_center + 71);
+				// x range: 88 - 212 = 124, center = 150
+				// y range: 47 - 161 = 114, center = 104
+				ctx.closePath();
+				ctx.stroke();
+				ctx.fillStyle = ((x_coord == selected_x) && (y_coord == selected_y)) ? '#f7e799' : '#aaaaaa';
+				ctx.fill();
+
+        // brick wall
+        if (tile.t == 1) {
+          ctx.beginPath();
+          ctx.moveTo(x_center + 124, y_center + 65);
+          ctx.lineTo(x_center + 176, y_center + 65);
+          ctx.lineTo(x_center + 176, y_center + 53);
+          ctx.lineTo(x_center + 124, y_center + 53);
+          ctx.fillStyle = '#ad352d';
+          ctx.fill();
+        }
+        if (tile.l == 1) {
+          ctx.beginPath();
+          ctx.moveTo(x_center + 124, y_center + 155);
+          ctx.lineTo(x_center + 98, y_center + 110);
+          ctx.lineTo(x_center + 88, y_center + 116);
+          ctx.lineTo(x_center + 114, y_center + 161);
+          ctx.fillStyle = '#ad352d';
+          ctx.fill();
+        }
+        if (tile.r == 1) {
+          ctx.beginPath();
+          ctx.moveTo(x_center + 202, y_center + 110);
+          ctx.lineTo(x_center + 176, y_center + 155);
+          ctx.lineTo(x_center + 186, y_center + 161);
+          ctx.lineTo(x_center + 212, y_center + 116);
+          ctx.fillStyle = '#ad352d';
+          ctx.fill();
+        }
+        
+        // colored key
+        if (tile.t == 2) {
+          ctx.beginPath();
+          ctx.arc(x_center + 150, y_center + 65, 5, 0, 2 * Math.PI, false);
+          ctx.fillStyle = tile.to || '#00ff00';
+          ctx.fill();
+        }
+        if (tile.l == 2) {
+          ctx.beginPath();
+          ctx.arc(x_center + 111, y_center + 132, 5, 0, 2 * Math.PI, false);
+          ctx.fillStyle = tile.lo || '#00ff00';
+          ctx.fill();
+        }
+        if (tile.r == 2) {
+          ctx.beginPath();
+          ctx.arc(x_center + 189, y_center + 132, 5, 0, 2 * Math.PI, false);
+          ctx.fillStyle = tile.ro || '#00ff00';
+          ctx.fill();
+        }
+
+        // locked door
+        if (tile.t == 3) {
+          ctx.beginPath();
+          ctx.moveTo(x_center + 124, y_center + 65);
+          ctx.lineTo(x_center + 176, y_center + 65);
+          ctx.lineTo(x_center + 176, y_center + 59);
+          ctx.lineTo(x_center + 124, y_center + 59);
+          ctx.fillStyle = tile.to || '#ad352d';
+          ctx.fill();
+        }
+        if (tile.l == 3) {
+          ctx.beginPath();
+          ctx.moveTo(x_center + 124, y_center + 155);
+          ctx.lineTo(x_center + 98, y_center + 110);
+          ctx.lineTo(x_center + 93, y_center + 113);
+          ctx.lineTo(x_center + 119, y_center + 158);
+          ctx.fillStyle = tile.lo || '#ad352d';
+          ctx.fill();
+        }
+        if (tile.r == 3) {
+          ctx.beginPath();
+          ctx.moveTo(x_center + 202, y_center + 110);
+          ctx.lineTo(x_center + 176, y_center + 155);
+          ctx.lineTo(x_center + 181, y_center + 158);
+          ctx.lineTo(x_center + 208, y_center + 113);
+          ctx.fillStyle = tile.ro || '#ad352d';
+          ctx.fill();
+        }
+        
+			}
+		}
+
+    function redrawMap() {
+			var canvas = document.getElementById('canvas');
+			if (canvas.getContext) {
+				var ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+			if (tiles[[selected_x, selected_y].toString()] === undefined) {
+				tiles[[selected_x, selected_y].toString()] = {}
+			}
+
+      var x = 0;
+      var y = 0;
+
+			$.each(tiles, function(key, value) {
+				var xypair = key.split(",");
+				x = xypair[0];
+				y = xypair[1];
+				draw(x,y);
+			});
+
+      readTileOptions();
+    }
+
+    redrawMap();
+
+    function moveUp() {
+      selected_y -= 1;
+      redrawMap();
+    }
+
+    function moveLeft() {
+      selected_x -= 1;
+      redrawMap();
+    }
+
+    function moveRight() {
+      selected_y += 1;
+      selected_x += 1;
+      redrawMap();
+    }
+
+    function moveHome() {
+      selected_y = 5;
+      selected_x = 5;
+      redrawMap();
+    }
+
+    function saveFile() {
+      var a = document.createElement("a");
+      var file = new Blob([generateSaveFile()], {type: "text/plain"});
+
+      a.href = URL.createObjectURL(file);
+      a.download = "map.json";
+      
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(function() {
+        document.body.removeChild(a);
+      }, 0);
+    }
+
+		function onFileLoad(event) {
+			tiles = {};
+			$.each(JSON.parse(event.target.result), function(key, value) {
+				tiles[value['xy']] = value;
+			});
+			redrawMap();
+		}
+
+		function onChooseFile(event, onLoadFileHandler) {
+			if (typeof window.FileReader !== 'function')
+				throw ("The file API isn't supported on this browser.");
+			let input = event.target;
+			if (!input)
+				throw ("The browser does not properly implement the event object");
+			if (!input.files)
+				throw ("This browser does not support the `files` property of the file input.");
+			if (!input.files[0])
+				return undefined;
+			let file = input.files[0];
+			let fr = new FileReader();
+			fr.onload = onLoadFileHandler;
+			fr.readAsText(file);
+		}
+
+    function readTileOptions() {
+      var tile = tiles[[selected_x, selected_y].toString()] || {};
+      $("#top-hallway").val(tile.t || 0);
+      $("#top-hallway-options").val(tile.to || "");
+      $("#left-hallway").val(tile.l || 0);
+      $("#left-hallway-options").val(tile.lo || "");
+      $("#right-hallway").val(tile.r || 0);
+      $("#right-hallway-options").val(tile.ro || "");
+    }
+
+    function setTileOptions() {
+      var top = $("#top-hallway").val();
+      var topOption = $("#top-hallway-options").val();
+      var left = $("#left-hallway").val();
+      var leftOption = $("#left-hallway-options").val();
+      var right = $("#right-hallway").val();
+      var rightOption = $("#right-hallway-options").val();
+
+      tiles[[selected_x, selected_y].toString()] = {
+        t: top,
+        to: topOption,
+        l: left,
+        lo: leftOption,
+        r: right,
+        ro: rightOption
+      };
+      redrawMap();
+    }
+
+		function generateSaveFile() {
+			var tileArray = [];
+			$.each(tiles, function(key, tile) {
+				tileArray.push({xy: key, l: tile.l, lo: tile.lo, r: tile.r, ro: tile.ro, t: tile.t, to: tile.to});
+			});
+			return JSON.stringify(tileArray);
+		}
+
+
+	</script>
+ </body>
+</html>
+
+

@@ -3,9 +3,9 @@
 To buld the ESP32 firmware:
 
 1. Install the ESP32 toolchain for your OS. You do not need to install the ESP-IDF -- that happens automatically in the next step.
-  * For Linux: https://esp-idf.readthedocs.io/en/v3.1-beta1/get-started/linux-setup.html
-  * For Windows: https://esp-idf.readthedocs.io/en/v3.1-beta1/get-started/windows-setup.html
-  * For OSX: https://esp-idf.readthedocs.io/en/v3.1-beta1/get-started/macos-setup.html
+  * For Linux: https://esp-idf.readthedocs.io/en/v3.2/get-started/linux-setup.html
+  * For Windows: https://esp-idf.readthedocs.io/en/v3.2/get-started/windows-setup.html
+  * For OSX: https://esp-idf.readthedocs.io/en/v3.2/get-started/macos-setup.html
 
 2. Pull in the ESP-IDF, MicroPython, and other dependencies:
 `git submodule update --init --recursive`
